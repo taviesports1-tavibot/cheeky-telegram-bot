@@ -16,3 +16,8 @@ def test_invalid_telegram_id_is_rejected() -> None:
 def test_postgres_url_is_normalized() -> None:
     settings = Settings(database_url="postgresql://user:pass@host/db")
     assert settings.database_url.startswith("postgresql+asyncpg://")
+
+
+def test_unresolved_database_reference_uses_sqlite_fallback() -> None:
+    settings = Settings(database_url="${{Postgres.DATABASE_URL}}")
+    assert settings.database_url == "sqlite+aiosqlite:///./cheeky_bot.db"
