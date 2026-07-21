@@ -40,6 +40,20 @@ class Settings(BaseSettings):
     rate_limit_per_minute: int = Field(12, ge=1, le=1000)
     max_media_size_mb: int = Field(10, ge=1, le=50)
 
+    @field_validator("bot_token", mode="before")
+    @classmethod
+    def normalize_bot_token(cls, value: object) -> object:
+        if isinstance(value, SecretStr):
+            raw_value = value.get_secret_value()
+        elif isinstance(value, str):
+            raw_value = value
+        else:
+            return value
+        raw_value = raw_value.strip()
+        if raw_value.startswith("BOT_TOKEN="):
+            raw_value = raw_value.removeprefix("BOT_TOKEN=").strip()
+        return raw_value.strip("\"'")
+
     @field_validator("superadmin_ids", mode="before")
     @classmethod
     def parse_ids(cls, value: object) -> frozenset[int]:
