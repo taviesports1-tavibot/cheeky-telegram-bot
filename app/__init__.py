@@ -1,0 +1,1 @@
+"""Cheeky Telegram Bot application."""
