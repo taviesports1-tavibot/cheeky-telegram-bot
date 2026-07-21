@@ -60,11 +60,17 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def normalize_database_url(cls, value: str) -> str:
+        value = value.strip()
         if value.startswith("postgres://"):
             return value.replace("postgres://", "postgresql+asyncpg://", 1)
         if value.startswith("postgresql://") and "+asyncpg" not in value:
             return value.replace("postgresql://", "postgresql+asyncpg://", 1)
-        return value
+        if value.startswith(("postgresql+asyncpg://", "sqlite+aiosqlite://")):
+            return value
+        # Railway can leave a service reference such as ${{Postgres.DATABASE_URL}}
+        # unresolved. Keep the bot and /health endpoint alive in degraded mode;
+        # SQLite is already a supported development fallback.
+        return "sqlite+aiosqlite:///./cheeky_bot.db"
 
     @property
     def webhook_path(self) -> str:
