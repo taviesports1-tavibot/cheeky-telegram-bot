@@ -10,7 +10,9 @@ from app.database import models  # noqa: F401
 from app.database.base import Base
 
 config = context.config
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+# ConfigParser treats percent signs in passwords as interpolation markers.
+# Escaping them here keeps valid Railway/PostgreSQL URLs parseable by Alembic.
+config.set_main_option("sqlalchemy.url", get_settings().database_url.replace("%", "%%"))
 if config.config_file_name:
     fileConfig(config.config_file_name)
 target_metadata = Base.metadata
